@@ -26,7 +26,7 @@ public class CircleImageView extends android.support.v7.widget.AppCompatImageVie
 
     @Override
     protected void onDraw(Canvas canvas) {
-        
+
         super.onDraw(canvas);
     }
 }
