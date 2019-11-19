@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PathDashPathEffect;
 import android.graphics.PathEffect;
+import android.graphics.PathMeasure;
 import android.graphics.RectF;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -24,9 +25,13 @@ public class TachometerView extends View{
     Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private static final float RADIUS = Utils.d2px(150);
     private static final float ANGLE = 120;
+    private static final float DASH_WIDTH = Utils.d2px(2);
+    private static final float POINTER_LENGTH = Utils.d2px(20);
     RectF drawArc = new RectF();
+    Path arcPath = new Path();
     Path dash = new Path();
-    PathEffect pathEffect = new PathDashPathEffect(dash,Utils.d2px(20),0,PathDashPathEffect.Style.MORPH);
+    PathMeasure pathMeasure;
+    PathEffect pathEffect ;
 
 
     {
@@ -52,14 +57,23 @@ public class TachometerView extends View{
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         drawArc.set(getWidth()/2 - RADIUS, getHeight()/2 - RADIUS, getWidth()/2 + RADIUS, getHeight()/2 + RADIUS);
-        dash.addRect(new RectF(0,0,Utils.d2px(2),Utils.d2px(10)), Path.Direction.CW);
-        paint.setPathEffect(pathEffect);
+
+        arcPath.addArc(drawArc,90 - ANGLE/2 + ANGLE, 360 - ANGLE);
+        pathMeasure = new PathMeasure(arcPath,false);
+
+        dash.addRect(new RectF(0,0, DASH_WIDTH, Utils.d2px(10)), Path.Direction.CW);
+        pathEffect = new PathDashPathEffect(dash,(pathMeasure.getLength() - DASH_WIDTH)/30,0,PathDashPathEffect.Style.ROTATE);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
+        paint.setPathEffect(pathEffect);
         canvas.drawArc(drawArc,90 - ANGLE/2 + ANGLE, 360 - ANGLE, false, paint);
+        paint.setPathEffect(null);
+
+        canvas.drawArc(drawArc,90 - ANGLE/2 + ANGLE, 360 - ANGLE, false, paint);
+
     }
 }
